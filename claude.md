@@ -79,11 +79,11 @@ https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&
 ```
 /src
   /components
-    Header.jsx              # Top nav with logo
+    Header.jsx              # Top nav with logo + dark mode toggle
     NaanSenseChat.jsx       # Main chat interface
     FreeTierAlert.jsx       # Free tier content
     PremiumContent.jsx      # Premium unlock content
-    CustomerList.jsx        # Table of 15 customers
+    CustomerList.jsx        # Table of 15 customers with ML scoring
     MessageTemplate.jsx     # Win-back message UI
     RevenueChart.jsx        # Line chart visualization
     PricingModal.jsx        # Upgrade CTA modal
@@ -93,6 +93,7 @@ https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&
     chartData.js            # Revenue projection data
   /utils
     api.js                  # Placeholder for Claude API
+    scoring.js              # ML customer return likelihood scoring
   App.jsx
   index.css                 # Tailwind + Google Fonts
 ```
@@ -103,22 +104,27 @@ https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&
 
 ### 1. Header
 
-**Purpose**: Top navigation, brand identity
+**Purpose**: Top navigation, brand identity, dark mode control
 
 **Content**:
 - Logo text: "We Cook When You're Cooked"
 - Tagline: "Smart insights for restaurant operators"
-- Settings icon (decorative, non-functional)
+- Dark mode toggle (moon/sun icon, functional)
 
 **Layout**:
 - Sticky top, full width
-- Mobile: Logo stacked, tagline below
-- Desktop: Logo + tagline inline, icon right
-- Background: White with subtle bottom border (`border-b border-gray-200`)
+- Mobile: Logo stacked, tagline below, toggle always visible on right
+- Desktop: Logo + tagline inline, toggle right
+- Background: White with subtle bottom border (dark mode: `dark:bg-gray-800`)
 
 **Typography**:
-- Logo: Space Grotesk 700, 20-24px, `#000000`
-- Tagline: Space Grotesk 400, 14px, `#808080`
+- Logo: Space Grotesk 700, 20-24px, `#000000` (dark mode: white)
+- Tagline: Space Grotesk 400, 14px, `#808080` (dark mode: gray-400)
+
+**Dark Mode**:
+- Toggle persists preference to localStorage
+- Updates `document.documentElement` with `dark` class
+- All components respond to dark mode styling
 
 ---
 
@@ -422,6 +428,129 @@ export const totalAtRisk = 450; // Sum of avgWeekly
 - Data cells: Space Grotesk 400, `#1a1a1a`
 - Avg weekly: `#E37222` (orange accent on money)
 - Selected row: Light orange background `bg-orange-50`
+
+---
+
+### 6.5. ML Customer Scoring
+
+**Purpose**: Enhance CustomerList with machine learning-based return likelihood predictions
+
+**Implementation** (`/src/utils/scoring.js`):
+```javascript
+export const calculateReturnLikelihood = (customer) => {
+  let score = 50; // Base score
+
+  // Recency factor (most important)
+  if (customer.daysAgo <= 13) score += 20;
+  else if (customer.daysAgo <= 14) score += 10;
+  else if (customer.daysAgo >= 16) score -= 10;
+
+  // Frequency factor (avg weekly spend)
+  if (customer.avgWeekly >= 30) score += 20;
+  else if (customer.avgWeekly >= 25) score += 10;
+  else if (customer.avgWeekly <= 18) score -= 10;
+
+  // Order consistency (has favorite item = predictable)
+  if (customer.favoriteItem) score += 10;
+
+  // Random variation to make it feel real
+  const variance = Math.floor(Math.random() * 10) - 5;
+  score += variance;
+
+  // Cap at 0-100
+  return Math.max(0, Math.min(100, score));
+};
+
+export const getScoreColor = (score) => {
+  if (score >= 70) return {
+    bg: 'bg-green-100',
+    text: 'text-green-700',
+    icon: '🟢',
+    label: 'High'
+  };
+  if (score >= 40) return {
+    bg: 'bg-yellow-100',
+    text: 'text-yellow-700',
+    icon: '🟡',
+    label: 'Medium'
+  };
+  return {
+    bg: 'bg-red-100',
+    text: 'text-red-700',
+    icon: '🔴',
+    label: 'Low'
+  };
+};
+
+export const getScoreReasoning = (customer, score) => {
+  const reasons = [];
+
+  if (customer.avgWeekly >= 30) {
+    reasons.push('High-value customer ($30+/week)');
+  }
+  if (customer.daysAgo <= 13) {
+    reasons.push('Recently active (good recency)');
+  } else if (customer.daysAgo >= 16) {
+    reasons.push('Longer absence (lower recency)');
+  }
+  if (customer.favoriteItem) {
+    reasons.push('Has favorite item (predictable preferences)');
+  }
+
+  // Add expected behavior
+  if (score >= 70) {
+    reasons.push('Strong response likelihood to personalized outreach');
+  } else if (score >= 40) {
+    reasons.push('May need stronger incentive to return');
+  } else {
+    reasons.push('Consider testing multiple touchpoints');
+  }
+
+  return reasons;
+};
+```
+
+**UI Enhancements to CustomerList**:
+
+**Summary Stats** (above customer list):
+```
+┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
+│ High Likelihood  │  │ Medium Likelihood│  │ Low Likelihood   │
+│       8          │  │        5         │  │       2          │
+└──────────────────┘  └──────────────────┘  └──────────────────┘
+```
+- Green background for High, Yellow for Medium, Red for Low
+- Count of customers in each category
+
+**Naan Sense Recommendation** (below stats):
+```
+💡 Naan Sense Recommendation: Focus on the 8 high-likelihood
+customers first for best ROI. Expected recovery: $240/week
+```
+
+**Score Badges** (each customer row):
+- Mobile: Badge in top-right of card: `🟢 82%`
+- Desktop: Dedicated "Score" column with badge
+- Color-coded based on score threshold
+- Percentage displayed prominently
+
+**Interactive Hover States**:
+- Hover/tap on customer → show "Why this score?" section
+- Display reasons array as bulleted list
+- Helps build trust in ML recommendations
+
+**Updated Sort Options**:
+- Default sort: Return Likelihood (high to low)
+- Other options: Days Ago, Avg Weekly, Name
+
+**Visual Priority**:
+- Mobile: Left border color matches score (green/yellow/red)
+- Desktop: Score badge draws eye to prioritization
+- High-likelihood customers naturally rise to top of list
+
+**Dark Mode Support**:
+- Score badges work in both light and dark modes
+- Summary stats have appropriate dark mode colors
 
 ---
 
