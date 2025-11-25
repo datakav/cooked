@@ -6,8 +6,7 @@
 
 **[Live Demo](https://cooked-live.vercel.app/)** | AI-powered customer retention with freemium monetization
 
-![Customer retention dashboard showing ML-powered scoring](https://via.placeholder.com/800x400/E37222/FFFFFF?text=Add+Screenshot+Here)
-*Replace with actual screenshot of your ML scoring interface*
+![Customer retention dashboard showing ML-powered scoring](./public/images/dashboard.png)
 
 ---
 
