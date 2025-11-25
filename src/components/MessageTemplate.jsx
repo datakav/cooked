@@ -41,17 +41,17 @@ export default function MessageTemplate({ selectedCustomers, onMessagesSent }) {
     <div>
       <div className="flex items-center gap-2 mb-4">
         <span className="text-2xl">📱</span>
-        <h3 className="text-xl font-semibold text-black">
+        <h3 className="text-xl font-semibold text-black dark:text-white">
           Win-Back Message Template
         </h3>
       </div>
 
-      <p className="text-sm text-mid-gray mb-4">
+      <p className="text-sm text-mid-gray dark:text-gray-400 mb-4">
         Preview for: <strong>{previewCustomer.name}</strong>
       </p>
 
-      <div className="bg-gray-50 rounded-lg p-6 mb-6 border border-gray-200">
-        <div className="space-y-3 text-off-black">
+      <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 mb-6 border border-gray-200 dark:border-gray-600">
+        <div className="space-y-3 text-off-black dark:text-gray-100">
           <p>
             Hi <span className="font-bold text-spice-orange">{previewCustomer.name}</span>!
           </p>
@@ -69,7 +69,7 @@ export default function MessageTemplate({ selectedCustomers, onMessagesSent }) {
             Here's 20% off your next order this week to welcome you back.
           </p>
           <p className="font-medium">- Dana & the team at Dana's Taco Stand</p>
-          <div className="pt-3 border-t border-gray-300 mt-4">
+          <div className="pt-3 border-t border-gray-300 dark:border-gray-500 mt-4">
             <p className="text-sm">
               Use code: <strong>COMEBACK20</strong>
             </p>
@@ -79,7 +79,7 @@ export default function MessageTemplate({ selectedCustomers, onMessagesSent }) {
       </div>
 
       <div className="mb-6">
-        <p className="text-sm font-medium text-black mb-3">Send via:</p>
+        <p className="text-sm font-medium text-black dark:text-white mb-3">Send via:</p>
         <div className="space-y-2">
           <label className="flex items-center gap-2 cursor-pointer">
             <input
@@ -90,7 +90,7 @@ export default function MessageTemplate({ selectedCustomers, onMessagesSent }) {
               onChange={(e) => setSendMethod(e.target.value)}
               className="w-4 h-4 accent-spice-orange"
             />
-            <span className="text-off-black">
+            <span className="text-off-black dark:text-gray-200">
               SMS ({previewCustomer.phone})
             </span>
           </label>
@@ -103,7 +103,7 @@ export default function MessageTemplate({ selectedCustomers, onMessagesSent }) {
               onChange={(e) => setSendMethod(e.target.value)}
               className="w-4 h-4 accent-spice-orange"
             />
-            <span className="text-off-black">Email (if available)</span>
+            <span className="text-off-black dark:text-gray-200">Email (if available)</span>
           </label>
         </div>
       </div>
@@ -116,7 +116,7 @@ export default function MessageTemplate({ selectedCustomers, onMessagesSent }) {
             readOnly
             className="mt-1 w-4 h-4 accent-spice-orange"
           />
-          <span className="text-off-black">
+          <span className="text-off-black dark:text-gray-200">
             Send to all {selectedCustomers.length} selected customers
           </span>
         </label>
@@ -127,7 +127,7 @@ export default function MessageTemplate({ selectedCustomers, onMessagesSent }) {
             onChange={(e) => setPersonalizeEach(e.target.checked)}
             className="mt-1 w-4 h-4 accent-spice-orange"
           />
-          <span className="text-off-black">
+          <span className="text-off-black dark:text-gray-200">
             Personalize each message (recommended)
           </span>
         </label>
